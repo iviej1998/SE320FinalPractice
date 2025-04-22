@@ -1,0 +1,36 @@
+import pytest
+from src.main import BankAccount
+from src.main import validate_amount, log_transaction
+
+def test_valid_deposit_and_withdrawal():
+    account = BankAccount("12345", "John Doe")
+    assert account.balance == 0
+    assert account.get_transaction_history() == []
+    account.deposit(500)
+    deposit = account.get_transaction_history()
+    assert deposit == ["Deposit: $500"]
+    account.withdraw(200)
+    withdraw = account.get_transaction_history()
+    assert withdraw == ["Deposit: $500", "Withdrawal: $200"]
+
+def test_insufficient_funds():
+    account = BankAccount("12345", "John Doe")
+    assert account.balance == 0
+    assert account.get_transaction_history() == []
+    with pytest.raises(ValueError):
+        account.withdraw(200)
+
+def test_sufficient_funds():
+    account = BankAccount("12345", "John Doe")
+    assert account.balance == 0
+    assert account.get_transaction_history() == []
+    account.deposit(500)
+    account.withdraw(200)
+    assert account.balance == 300
+
+def test_amount_limit():
+    account = BankAccount("12345", "John Doe")
+    assert account.balance == 0
+    assert account.get_transaction_history() == []
+    with pytest.raises(ValueError):
+        account.deposit(1500)
