@@ -1,0 +1,88 @@
+import functools
+from typing import List
+
+# This decorator is provided for you
+def log_transaction(func: callable) -> callable:
+    """Logs any transaction that changes the account balance"""
+    @functools.wraps(func)
+    def wrapper(self, amount: float, *args, **kwargs) -> callable:
+        initial_balance = self.balance
+        result = func(self, amount, *args, **kwargs)
+        print(f"Transaction: {func.__name__}, Amount: ${amount}, "
+            f"Balance: ${self.balance}")
+        return result
+    return wrapper
+
+# TODO: Implement this decorator (4 points)
+def validate_amount(func: callable) -> callable: 
+    """
+    Decorator that validates the amount parameter:
+    - Must be positive number
+    - Must be less than $1000
+    - raises a ValueError is validation fails
+    """
+    @functools.wraps(func)
+    def wrapper(self, amount: float, *args, **kwargs) -> callable:
+        """ wrapper function to add error handling functionality """
+        if amount <= 0:
+            raise ValueError (f"Validation failure. Your balance of {self.balance} is insufficient.")
+        if amount >= 1000:
+            raise ValueError ("Validation failure. Your deposit must be below $1000.")
+        return func(self, amount, *args, **kwargs)
+    return wrapper
+
+class BankAccount:
+    """ this class contains the logic to manage the customer's bank account """
+    def __init__(self, account_number: str, owner_name: str) -> None:
+        """ initialize bank account attributes """
+        self.account_number = account_number
+        self.owner_name = owner_name
+        self.balance = 0
+        self.transactions: List[str] = []
+    
+    # TODO: Add appropriate decorators (2 points)
+    @log_transaction
+    @validate_amount
+    def deposit(self, amount: float) -> None:
+        """Add money to account"""
+        self.balance += amount
+        self.transactions.append(f"Deposit: ${amount}")
+    
+    # TODO: Add appropriate decorators (2 points)
+    @log_transaction
+    @validate_amount
+    def withdraw(self, amount: float) -> None:
+        """Remove money from account if sufficient funds exist"""
+        if self.balance >= amount:
+            self.balance -= amount
+            self.transactions.append(f"Withdrawal: ${amount}")
+        else:
+            raise ValueError("Insufficient funds")
+    
+    # TODO: Implement this method (1 points)
+    def get_transaction_history(self) -> List[str]:
+        """Return list of all transactions"""
+        return self.transactions
+    
+
+#Example test cases:
+
+# Create account
+account = BankAccount("12345", "John Doe")
+
+# Test transactions
+account.deposit(500)    # Should work
+account.withdraw(200)   # Should work
+
+try:    # Should fail (over $1000)
+    account.deposit(1500)
+except ValueError as e:
+    print("Caught error in deposit", e)
+
+try:
+    account.withdraw(400)   # Should fail (insufficient funds)
+except ValueError as e:
+    print("caught exception", e)
+    
+# Print history
+print(account.get_transaction_history())
